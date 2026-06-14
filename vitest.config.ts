@@ -1,0 +1,13 @@
+import path from "node:path";
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      "bun:sqlite": path.resolve(__dirname, "src/test-shims/bun-sqlite.ts"),
+    },
+  },
+  test: {
+    environment: "node",
+  },
+});

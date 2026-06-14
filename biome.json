@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["dist", "node_modules", ".worktrees"]
+    "ignore": ["dist", "node_modules", ".worktrees", "data"]
   },
   "formatter": {
     "enabled": true,

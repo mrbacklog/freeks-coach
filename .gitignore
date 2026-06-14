@@ -13,6 +13,11 @@
 # Node / Bun
 node_modules/
 dist/
+
+# SQLite databases
+data/*.db
+data/*.db-shm
+data/*.db-wal
 .turbo/
 *.tsbuildinfo
 bun.lockb
@@ -40,3 +45,4 @@ bun-debug.log*
 # LabTech tooling-residu (geen onderdeel van een user-product)
 werkmap/
 .playwright-mcp/
+package-lock.json
