@@ -1,8 +1,10 @@
+providers = ["bun"]
+
 [phases.install]
 cmds = ["bun install --ignore-scripts"]
 
 [phases.build]
-cmds = ["bun x vite build"]
+cmds = ["bun run build"]
 
 [start]
 cmd = "bun run src/server/index.ts"
