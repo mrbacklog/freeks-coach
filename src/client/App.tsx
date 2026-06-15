@@ -12,6 +12,7 @@ import { Login } from "./pages/Login";
 import { Measurements } from "./pages/Measurements";
 import { Onboarding } from "./pages/Onboarding";
 import { SessionDetail } from "./pages/SessionDetail";
+import { Progress } from "./pages/Progress";
 import { Settings } from "./pages/Settings";
 import { WeekPlan } from "./pages/WeekPlan";
 import { WeeklyCheckIn } from "./pages/WeeklyCheckIn";
@@ -46,6 +47,7 @@ export default function App() {
                   <Route path="/goals" element={<Goals />} />
                   <Route path="/goals/new" element={<GoalEdit />} />
                   <Route path="/goals/:id" element={<GoalEdit />} />
+                  <Route path="/progress" element={<Progress />} />
                   <Route path="/history" element={<History />} />
                   <Route path="/settings" element={<Settings />} />
                 </Routes>

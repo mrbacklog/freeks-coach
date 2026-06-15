@@ -984,6 +984,26 @@ app.get("/api/user/export", authMiddleware, (c) => {
   return c.body(JSON.stringify(exportData, null, 2));
 });
 
+// Weekly training volume for progress screen
+app.get("/api/progress/weekly-volume", authMiddleware, (c) => {
+  const db = getDb();
+  const rows = db
+    .query(`
+      SELECT
+        tp.week_start,
+        COALESCE(SUM(se.sets_completed), 0) as total_sets,
+        COUNT(DISTINCT CASE WHEN s.completed_at IS NOT NULL THEN s.id END) as sessions_completed
+      FROM training_plan tp
+      LEFT JOIN session s ON s.plan_id = tp.id
+      LEFT JOIN session_exercise se ON se.session_id = s.id AND s.completed_at IS NOT NULL
+      GROUP BY tp.week_start
+      ORDER BY tp.week_start ASC
+      LIMIT 12
+    `)
+    .all();
+  return c.json(rows);
+});
+
 // Protect all other /api/* routes
 app.use("/api/*", authMiddleware);
 

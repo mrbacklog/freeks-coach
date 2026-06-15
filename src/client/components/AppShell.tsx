@@ -284,6 +284,7 @@ export function AppShell({ children }: AppShellProps) {
               }}
             />
             {[
+              { path: "/progress", label: "Voortgang" },
               { path: "/goals", label: "Doelen" },
               { path: "/history", label: "Geschiedenis" },
               { path: "/settings", label: "Instellingen" },
