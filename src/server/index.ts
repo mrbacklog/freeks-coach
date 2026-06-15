@@ -339,8 +339,10 @@ app.get("/api/goals", authMiddleware, (c) => {
     id: number;
     title: string;
     type: string;
+    metric: string | null;
     target_value: string | null;
     target_date: string | null;
+    notes: string | null;
     created_at: string;
   }>;
   const achieved = db
