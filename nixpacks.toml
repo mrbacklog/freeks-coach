@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["bun"]
+
+[phases.install]
+cmds = ["bun install --ignore-scripts"]
+
+[phases.build]
+cmds = ["bun x vite build"]
+
+[start]
+cmd = "bun run src/server/index.ts"
