@@ -1,5 +1,9 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { serveStatic } from "hono/bun";
 import { getDb } from "../db/init";
 import { seedExercises } from "../db/seed";
 import { getRandomMessage } from "./content/completionMessages";
@@ -976,11 +980,20 @@ app.get("/api/user/export", authMiddleware, (c) => {
 // Protect all other /api/* routes
 app.use("/api/*", authMiddleware);
 
+// Serve React SPA static files in production (relative to CWD = /app in Docker)
+app.use("/*", serveStatic({ root: "./dist" }));
+// SPA fallback: serve index.html for unmatched routes (client-side routing)
+app.get("/*", async (c) => {
+  const __dirname = dirname(fileURLToPath(import.meta.url));
+  const html = readFileSync(join(__dirname, "../../dist/index.html"), "utf-8");
+  return c.html(html);
+});
+
 // Initialize DB on startup
 const db = getDb();
 seedExercises(db);
 
 export default {
-  port: 3001,
+  port: Number(process.env.PORT ?? 3001),
   fetch: app.fetch,
 };
