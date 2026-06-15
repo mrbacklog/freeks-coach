@@ -15,6 +15,11 @@ export function getDb(): Database {
     db.exec("PRAGMA foreign_keys=ON");
     const schema = readFileSync(join(__dirname, "schema.sql"), "utf-8");
     db.exec(schema);
+    // Migratie: voeg metric kolom toe aan goal als die nog niet bestaat
+    const goalCols = db.query("PRAGMA table_info(goal)").all() as { name: string }[];
+    if (!goalCols.some((c) => c.name === "metric")) {
+      db.exec("ALTER TABLE goal ADD COLUMN metric TEXT;");
+    }
   }
   return db;
 }

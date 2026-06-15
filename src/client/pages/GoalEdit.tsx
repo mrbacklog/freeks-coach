@@ -8,6 +8,7 @@ export function GoalEdit() {
 
   const [title, setTitle] = useState("");
   const [type, setType] = useState<"sprint" | "sprong" | "algemeen">("algemeen");
+  const [metric, setMetric] = useState<string | null>(null);
   const [targetValue, setTargetValue] = useState("");
   const [targetDate, setTargetDate] = useState("");
   const [notes, setNotes] = useState("");
@@ -22,6 +23,7 @@ export function GoalEdit() {
           if (data.goal) {
             setTitle(data.goal.title || "");
             setType(data.goal.type || "algemeen");
+            setMetric(data.goal.metric || null);
             setTargetValue(data.goal.target_value || "");
             setTargetDate(data.goal.target_date || "");
             setNotes(data.goal.notes || "");
@@ -39,14 +41,14 @@ export function GoalEdit() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ title, type, targetValue, targetDate, notes }),
+          body: JSON.stringify({ title, type, metric, targetValue, targetDate, notes }),
         });
       } else {
         await fetch(`/api/goals/${id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ title, type, targetValue, targetDate, notes }),
+          body: JSON.stringify({ title, type, metric, targetValue, targetDate, notes }),
         });
       }
       navigate("/goals");
@@ -135,6 +137,42 @@ export function GoalEdit() {
             </button>
           ))}
         </div>
+      </div>
+
+      <div style={{ marginBottom: "16px" }}>
+        <label
+          style={{
+            display: "block",
+            fontSize: "var(--text-sm)",
+            fontWeight: 600,
+            marginBottom: "6px",
+            color: "var(--text-secondary)",
+          }}
+        >
+          Koppel aan meting (optioneel)
+        </label>
+        <select
+          value={metric ?? ""}
+          onChange={(e) =>
+            setMetric(e.target.value || null)
+          }
+          style={{
+            width: "100%",
+            padding: "12px",
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border)",
+            borderRadius: "8px",
+            color: "var(--text-primary)",
+            fontSize: "var(--text-base)",
+          }}
+        >
+          <option value="">Geen specifieke meting</option>
+          <option value="sprong">Verticale sprong</option>
+          <option value="sprint">10m sprint</option>
+          <option value="balans">Balans</option>
+          <option value="eenbenige_sprong">Eenbenige sprong</option>
+          <option value="medbalworp">Medball-worp</option>
+        </select>
       </div>
 
       <div style={{ marginBottom: "16px" }}>

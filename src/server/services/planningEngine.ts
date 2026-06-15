@@ -66,6 +66,7 @@ interface Goal {
   id: number;
   title: string;
   type: string;
+  metric: string | null;
 }
 
 interface User {
@@ -248,8 +249,17 @@ export function generatePlan(db: Database, weekStart: string): PlanResult {
     .all() as Exercise[];
 
   const goals = db
-    .query("SELECT id, title, type FROM goal WHERE achieved_at IS NULL")
+    .query("SELECT id, title, type, metric FROM goal WHERE achieved_at IS NULL")
     .all() as Goal[];
+
+  // Doel-metric koppeling: bepaal voorkeurscategorie op basis van actief doel
+  let voorkeursCategorie: string | null = null;
+  const actieveDoel = goals[0] ?? null;
+  if (actieveDoel?.metric === "sprong" || actieveDoel?.metric === "eenbenige_sprong") {
+    voorkeursCategorie = "plyometrie";
+  } else if (actieveDoel?.metric === "sprint") {
+    voorkeursCategorie = "snelheid";
+  }
 
   const sessions = buildSessions(
     weekStart,
@@ -260,6 +270,7 @@ export function generatePlan(db: Database, weekStart: string): PlanResult {
     plyoIntensity,
     herstellDagen,
     extraBezetteDagen,
+    voorkeursCategorie,
   );
 
   // Step 6: Personalization messages
@@ -332,9 +343,16 @@ function buildSessions(
   plyoIntensity: string,
   herstellDagen: Set<number>,
   extraBezetteDagen: number[],
+  voorkeursCategorie: string | null,
 ): PlannedSession[] {
   const sessions: PlannedSession[] = [];
-  const categories = ["beensterkte", "bovenlichaam", "kern", "plyometrie"] as const;
+
+  // Herschik categorieën als er een voorkeur is
+  const baseCategories = ["beensterkte", "bovenlichaam", "kern", "plyometrie"];
+  if (voorkeursCategorie && baseCategories.includes(voorkeursCategorie)) {
+    const idx = baseCategories.indexOf(voorkeursCategorie);
+    baseCategories.unshift(...baseCategories.splice(idx, 1));
+  }
 
   // Plan 3 training sessions on non-korfball days
   const bezetteDagen = new Set([...korfballDays, ...extraBezetteDagen]);
@@ -348,7 +366,7 @@ function buildSessions(
     const sessionDate = new Date(weekStartDate);
     sessionDate.setDate(weekStartDate.getDate() + dayOfWeek - 1);
 
-    const category = categories[i % categories.length];
+    const category = baseCategories[i % baseCategories.length];
     // activity_log day_of_week is 0-6; sessie dayOfWeek is 1-7
     const isDagInHerstelveld = herstellDagen.has(dayOfWeek - 1);
     const effectieveCategorie = isDagInHerstelveld && category === "plyometrie" ? "herstel" : category;

@@ -776,18 +776,20 @@ app.post("/api/goals", authMiddleware, async (c) => {
   const body = (await c.req.json()) as {
     title: string;
     type: string;
+    metric?: string | null;
     targetValue?: string;
     targetDate?: string;
     notes?: string;
   };
   const db = getDb();
   const stmt = db.prepare(`
-    INSERT INTO goal (title, type, target_value, target_date, notes, created_at)
-    VALUES (?, ?, ?, ?, ?, datetime('now'))
+    INSERT INTO goal (title, type, metric, target_value, target_date, notes, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
   `);
   const result = stmt.run(
     body.title,
     body.type,
+    body.metric ?? null,
     body.targetValue || null,
     body.targetDate || null,
     body.notes || null,
@@ -801,6 +803,7 @@ app.patch("/api/goals/:id", authMiddleware, async (c) => {
   const body = (await c.req.json()) as {
     title?: string;
     type?: string;
+    metric?: string | null;
     targetValue?: string;
     targetDate?: string;
     notes?: string;
@@ -808,6 +811,7 @@ app.patch("/api/goals/:id", authMiddleware, async (c) => {
   const db = getDb();
   const stmt = db.prepare(`
     UPDATE goal SET title = COALESCE(?, title), type = COALESCE(?, type),
+    metric = COALESCE(?, metric),
     target_value = COALESCE(?, target_value), target_date = COALESCE(?, target_date),
     notes = COALESCE(?, notes)
     WHERE id = ?
@@ -815,6 +819,7 @@ app.patch("/api/goals/:id", authMiddleware, async (c) => {
   stmt.run(
     body.title || null,
     body.type || null,
+    body.metric ?? null,
     body.targetValue || null,
     body.targetDate || null,
     body.notes || null,

@@ -102,6 +102,7 @@ CREATE TABLE IF NOT EXISTS goal (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
   type TEXT NOT NULL,
+  metric TEXT,
   target_value REAL,
   target_date TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
