@@ -1,41 +1,49 @@
+import { isInPhvVenster, mirwaldOffset } from "./mirwald";
+
 export interface PhvResult {
-  maturityOffset: number; // years (negative = before PHV, positive = after PHV)
-  estimatedPhvAge: number; // estimated age at PHV
-  phvStatus: "pre" | "near" | "post"; // pre-PHV, near PHV (within 1 year), post-PHV
+  maturityOffset: number;
+  estimatedPhvAge: number;
+  phvStatus: "pre" | "near" | "post";
   message: string;
   plyoCaution: boolean;
+  phvVensterActief: boolean;
 }
 
 export function calculatePhv(
   heightCm: number,
   weightKg: number,
   sittingHeightCm: number,
-  ageDays: number, // age in days
+  ageDays: number,
 ): PhvResult {
   const ageYears = ageDays / 365.25;
-  const legLength = heightCm - sittingHeightCm;
+  const maturityOffset = mirwaldOffset(heightCm, sittingHeightCm, weightKg, ageYears);
 
-  // Mirwald 2002 formula for boys
-  const maturityOffset =
-    -9.236 +
-    0.0002708 * (legLength * sittingHeightCm) -
-    0.001663 * (ageYears * legLength) +
-    0.007216 * (ageYears * sittingHeightCm) +
-    0.02292 * ((weightKg / heightCm) * 100);
+  if (maturityOffset === null) {
+    return {
+      maturityOffset: 0,
+      estimatedPhvAge: 0,
+      phvStatus: "pre",
+      message: "Onvoldoende gegevens voor PHV-schatting. Voeg zithoogte toe bij je metingen.",
+      plyoCaution: false,
+      phvVensterActief: false,
+    };
+  }
 
   const estimatedPhvAge = ageYears - maturityOffset;
+  const phvVensterActief = isInPhvVenster(maturityOffset);
 
   let phvStatus: PhvResult["phvStatus"];
   let message: string;
   let plyoCaution: boolean;
 
-  if (maturityOffset < -1) {
+  if (maturityOffset < -1.0) {
     phvStatus = "pre";
     message = "Je bent nog ruim voor je groeipiek. Bouw kracht op met veilige basisoefeningen.";
     plyoCaution = false;
-  } else if (maturityOffset < 1) {
+  } else if (maturityOffset <= 1.0) {
     phvStatus = "near";
-    message = "Je nadert waarschijnlijk je groeipiek. Wees extra voorzichtig met plyometrie.";
+    message =
+      "Je zit waarschijnlijk in je groeispurt. Extra voorzichtig met plyometrie — je gewrichten zijn kwetsbaarder.";
     plyoCaution = true;
   } else {
     phvStatus = "post";
@@ -49,6 +57,7 @@ export function calculatePhv(
     phvStatus,
     message,
     plyoCaution,
+    phvVensterActief,
   };
 }
 

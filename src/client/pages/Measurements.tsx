@@ -22,6 +22,7 @@ interface PhvData {
   phvStatus: "pre" | "near" | "post";
   message: string;
   plyoCaution: boolean;
+  phvVensterActief: boolean;
 }
 
 interface Asymmetry {
@@ -220,51 +221,50 @@ export function Measurements() {
       {phv && (
         <div
           style={{
-            background: "var(--bg-surface)",
-            border: "1px solid var(--border)",
+            background: phv.phvVensterActief
+              ? "rgba(255, 180, 0, 0.12)"
+              : "var(--bg-surface)",
+            border: `1px solid ${phv.phvVensterActief ? "rgba(255,180,0,0.5)" : "var(--border)"}`,
             borderRadius: "12px",
             padding: "16px",
             marginBottom: "16px",
           }}
         >
-          <p
+          <div
             style={{
               fontFamily: "var(--font-condensed)",
               fontWeight: 700,
               fontSize: "var(--text-xs)",
-              color: "var(--text-secondary)",
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-              marginBottom: "8px",
+              color: "var(--text-ghost)",
+              marginBottom: "4px",
             }}
           >
-            GROEIFASE
-          </p>
-          <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "8px" }}>
-            <span
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "var(--text-metric)",
-                color: "var(--accent)",
-                fontWeight: 500,
-              }}
-            >
-              {phv.maturityOffset > 0 ? "+" : ""}
-              {phv.maturityOffset}
-            </span>
-            <span style={{ color: "var(--text-secondary)", fontSize: "var(--text-sm)" }}>
-              jaar offset
-            </span>
+            PHV-status
           </div>
-          <p
+          <div
             style={{
-              color: "var(--text-secondary)",
+              fontSize: "var(--text-base)",
+              fontWeight: 600,
+              color: phv.phvVensterActief ? "#f59e0b" : "var(--text-primary)",
+              marginBottom: "6px",
+            }}
+          >
+            {phv.phvVensterActief
+              ? "Je zit waarschijnlijk in je groeispurt"
+              : phv.maturityOffset < -1.0
+                ? `Geschatte afstand tot PHV: over ~${Math.round(Math.abs(phv.maturityOffset + 1.0) * 12)} maanden`
+                : `Groeispurt ~${Math.round((phv.maturityOffset - 1.0) * 12)} maanden geleden`}
+          </div>
+          <div
+            style={{
               fontSize: "var(--text-sm)",
-              lineHeight: "1.6",
+              color: "var(--text-secondary)",
             }}
           >
             {phv.message}
-          </p>
+          </div>
           {phv.plyoCaution && (
             <div
               style={{
