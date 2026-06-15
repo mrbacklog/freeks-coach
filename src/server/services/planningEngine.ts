@@ -1,4 +1,6 @@
 import type { Database } from "bun:sqlite";
+import { assertPhvCap } from "./assert-schedule";
+import { isInPhvVenster, mirwaldOffset } from "../utils/mirwald";
 import { analyseerTrend } from "./trend-detection";
 
 export interface PlanResult {
@@ -46,6 +48,7 @@ interface Measurement {
   measured_at: string;
   height_cm: number;
   sitting_height_cm: number | null;
+  weight_kg: number | null;
 }
 
 interface Exercise {
@@ -141,7 +144,7 @@ export function generatePlan(db: Database, weekStart: string): PlanResult {
 
   const measurements = db
     .query(`
-    SELECT measured_at, height_cm, sitting_height_cm
+    SELECT measured_at, height_cm, sitting_height_cm, weight_kg
     FROM measurement
     WHERE height_cm IS NOT NULL
     ORDER BY measured_at ASC
@@ -154,6 +157,37 @@ export function generatePlan(db: Database, weekStart: string): PlanResult {
     plyoVolumeModifier -= 0.3;
     plyoIntensity = "moderate";
   }
+
+  // PHV-venster check via Mirwald (F7)
+  const latestWithData = [...measurements]
+    .reverse()
+    .find((m) => m.sitting_height_cm !== null && m.weight_kg !== null);
+  let phvVensterActief = false;
+  if (latestWithData?.sitting_height_cm && latestWithData.weight_kg) {
+    const userBirth = db
+      .query("SELECT birth_date FROM user LIMIT 1")
+      .get() as { birth_date: string } | null;
+    if (userBirth) {
+      const leeftijdDec =
+        (new Date(latestWithData.measured_at).getTime() -
+          new Date(userBirth.birth_date).getTime()) /
+        (365.25 * 24 * 60 * 60 * 1000);
+      const offset = mirwaldOffset(
+        latestWithData.height_cm,
+        latestWithData.sitting_height_cm,
+        latestWithData.weight_kg,
+        leeftijdDec,
+      );
+      if (offset !== null && isInPhvVenster(offset)) {
+        phvVensterActief = true;
+        plyoVolumeModifier = Math.min(plyoVolumeModifier, 0.6);
+        plyoIntensity = "low";
+      }
+    }
+  }
+
+  // F7: asserteer PHV-cap (werpt Error als constraint geschonden)
+  assertPhvCap(phvVensterActief, plyoVolumeModifier);
 
   // Trend-gebaseerde aanpassingen
   if (trendAnalyse.overreaching) {
