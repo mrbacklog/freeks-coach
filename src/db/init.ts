@@ -20,6 +20,31 @@ export function getDb(): Database {
     if (!goalCols.some((c) => c.name === "metric")) {
       db.exec("ALTER TABLE goal ADD COLUMN metric TEXT;");
     }
+    // Migratie: vergroot exercise.category CHECK-constraint voor coordinatie en snelheid
+    const exerciseSql = db
+      .query("SELECT sql FROM sqlite_master WHERE type='table' AND name='exercise'")
+      .get() as { sql: string } | null;
+    if (exerciseSql?.sql && !exerciseSql.sql.includes("coordinatie")) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS exercise_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL UNIQUE,
+          category TEXT NOT NULL CHECK(category IN ('beensterkte', 'bovenlichaam', 'kern', 'plyometrie', 'herstel', 'coordinatie', 'snelheid')),
+          description TEXT NOT NULL,
+          safety_cue TEXT NOT NULL,
+          korfbal_context TEXT NOT NULL,
+          difficulty TEXT NOT NULL CHECK(difficulty IN ('beginner', 'intermediate', 'advanced')),
+          is_bilateral INTEGER NOT NULL DEFAULT 1 CHECK(is_bilateral IN (0, 1)),
+          phv_safety TEXT NOT NULL CHECK(phv_safety IN ('allowed', 'caution', 'restricted')),
+          sets INTEGER NOT NULL DEFAULT 3,
+          reps TEXT NOT NULL DEFAULT '10',
+          rest_seconds INTEGER NOT NULL DEFAULT 60
+        );
+        INSERT OR IGNORE INTO exercise_new SELECT * FROM exercise;
+        DROP TABLE exercise;
+        ALTER TABLE exercise_new RENAME TO exercise;
+      `);
+    }
   }
   return db;
 }

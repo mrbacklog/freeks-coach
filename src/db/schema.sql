@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS session (
 CREATE TABLE IF NOT EXISTS exercise (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL UNIQUE,
-  category TEXT NOT NULL CHECK(category IN ('beensterkte', 'bovenlichaam', 'kern', 'plyometrie', 'herstel')),
+  category TEXT NOT NULL CHECK(category IN ('beensterkte', 'bovenlichaam', 'kern', 'plyometrie', 'herstel', 'coordinatie', 'snelheid')),
   description TEXT NOT NULL,
   safety_cue TEXT NOT NULL,
   korfbal_context TEXT NOT NULL,

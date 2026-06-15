@@ -2,7 +2,7 @@ import type { Database } from "bun:sqlite";
 
 interface Exercise {
   name: string;
-  category: "beensterkte" | "bovenlichaam" | "kern" | "plyometrie" | "herstel";
+  category: "beensterkte" | "bovenlichaam" | "kern" | "plyometrie" | "herstel" | "coordinatie" | "snelheid";
   description: string;
   safety_cue: string;
   korfbal_context: string;
@@ -416,6 +416,275 @@ const EXERCISES: Exercise[] = [
     sets: 2,
     reps: "10 bewegingen",
     rest_seconds: 30,
+  },
+
+  // COORDINATIE (5)
+  {
+    name: "Ladderrun Lateraal",
+    category: "coordinatie" as const,
+    description:
+      "Zet een ladderoefening uit op de grond. Stap snel zijwaarts door de vakjes: links in, rechts in, links uit, rechts uit. " +
+      "Houd je knieën licht gebogen en je romp stabiel. Oefen eerst langzaam, dan steeds sneller. " +
+      "Dit traint je coördinatie en voetenwerk voor snelle zijwaartse bewegingen.",
+    safety_cue:
+      "Kijk voor je, niet naar je voeten. Stop direct als je een enkel verzwikt.",
+    korfbal_context:
+      "Snel lateraal voetenwerk is essentieel voor het in en uit dekken van tegenstanders in korfbal.",
+    difficulty: "beginner" as const,
+    is_bilateral: 1 as const,
+    phv_safety: "allowed" as const,
+    sets: 3,
+    reps: "4 lengtes",
+    rest_seconds: 60,
+  },
+  {
+    name: "Ladderrun Voorwaarts-Achterwaarts",
+    category: "coordinatie" as const,
+    description:
+      "Loop voorwaarts door elk vak van de ladder (één voet per vak), draai dan en loop terug achterwaarts. " +
+      "Houd je armen actief en je houding rechtop. Begin langzaam en verhoog de snelheid. " +
+      "Dit verbetert voor-achterwaartse acceleratie en coördinatie.",
+    safety_cue:
+      "Zorg voor een vlakke ondergrond. Loop achterwaarts alleen als je de ruimte kent.",
+    korfbal_context:
+      "In- en uitlopen achter de post vereist snelle voor-achterwaartse versnellingen typisch voor korfbal.",
+    difficulty: "beginner" as const,
+    is_bilateral: 1 as const,
+    phv_safety: "allowed" as const,
+    sets: 3,
+    reps: "4 lengtes",
+    rest_seconds: 60,
+  },
+  {
+    name: "Mirror Drill",
+    category: "coordinatie" as const,
+    description:
+      "Sta tegenover een partner of spiegel op 2 meter afstand. De leider maakt willekeurige bewegingen — zijwaarts, voorwaarts, achterwaarts. " +
+      "Jij volgt zo snel mogelijk. Wissel elke 20 seconden de rol. " +
+      "Dit traint reactiesnelheid en anticipatie op tegenstanders.",
+    safety_cue: "Houd voldoende ruimte om je heen. Stop bij duizeligheid.",
+    korfbal_context:
+      "Directe reactie op tegenstander-bewegingen is de kern van één-op-één-verdediging in korfbal.",
+    difficulty: "intermediate" as const,
+    is_bilateral: 1 as const,
+    phv_safety: "allowed" as const,
+    sets: 4,
+    reps: "20 sec per rol",
+    rest_seconds: 45,
+  },
+  {
+    name: "Laterale Shuffle",
+    category: "coordinatie" as const,
+    description:
+      "Sta met gebogen knieën in een lage atletische houding. Schuifel snel zijwaarts 5 meter, tik de grond aan, schuifel terug. " +
+      "Kruis je voeten niet. Houd je hoofd omhoog en je gewicht op de voorvoet. " +
+      "Dit bouwt laterale snelheid en stabiliteit.",
+    safety_cue:
+      "Kruis je voeten niet — dit vergroot het valrisico. Houd je knieën licht gebogen.",
+    korfbal_context:
+      "Snel zijwaarts bewegen zonder de dekking te verliezen is een basistechniek in korfbalverdediging.",
+    difficulty: "beginner" as const,
+    is_bilateral: 1 as const,
+    phv_safety: "allowed" as const,
+    sets: 4,
+    reps: "5m heen en terug",
+    rest_seconds: 45,
+  },
+  {
+    name: "Richtingswisselloop",
+    category: "coordinatie" as const,
+    description:
+      "Zet vier pionnen uit in een T-vorm. Ren vooruit naar het midden, shuffle links, shuffle rechts, " +
+      "shuffle terug naar midden en sprint achteruit naar start. Houd altijd je gezicht naar de voorste pion. " +
+      "Dit is een klassieke wendbaarheidstest.",
+    safety_cue:
+      "Vermijd plotselinge stops op harde ondergrond — verlaag je zwaartepunt voor elke wisseling.",
+    korfbal_context:
+      "De T-drill spiegelt de snelle richtingsveranderingen bij aanvallen en verdedigen in korfbal.",
+    difficulty: "intermediate" as const,
+    is_bilateral: 1 as const,
+    phv_safety: "allowed" as const,
+    sets: 4,
+    reps: "1 volledige T",
+    rest_seconds: 90,
+  },
+
+  // SNELHEID (5)
+  {
+    name: "A-Skip",
+    category: "snelheid" as const,
+    description:
+      "Loop voorwaarts terwijl je afwisselend een knie hoog optilt tot heuphogte en de andere voet actief neerzet. " +
+      "Duw jezelf omhoog met de steunvoet en houd je armen actief. " +
+      "Dit verbetert je sprintmechanica.",
+    safety_cue:
+      "Houd je romp rechtop — buig niet vanuit de heup. Begin op lage snelheid.",
+    korfbal_context:
+      "Goede sprintmechanica verhoogt je maximale snelheid bij uitbreken naar vrije ruimte in korfbal.",
+    difficulty: "beginner" as const,
+    is_bilateral: 1 as const,
+    phv_safety: "allowed" as const,
+    sets: 3,
+    reps: "20m",
+    rest_seconds: 60,
+  },
+  {
+    name: "Build-up Sprint",
+    category: "snelheid" as const,
+    description:
+      "Start vanuit stilstand en verhoog je snelheid geleidelijk over 40 meter: 0-10m = 50%, 10-25m = 75%, 25-40m = 95% van je max. " +
+      "Focus op vloeiende loopmechanica, geen plotselinge acceleraties. Herstel 2 minuten tussen sprints.",
+    safety_cue:
+      "Nooit een build-up sprint doen zonder 10 minuten warming-up. Stop bij pijn in de hamstring.",
+    korfbal_context:
+      "Snelheidsopbouw over 30-40m spiegelt de uitbraaksituaties in korfbal na het winnen van de bal.",
+    difficulty: "intermediate" as const,
+    is_bilateral: 1 as const,
+    phv_safety: "caution" as const,
+    sets: 4,
+    reps: "40m",
+    rest_seconds: 120,
+  },
+  {
+    name: "Hoge Knieloop",
+    category: "snelheid" as const,
+    description:
+      "Loop voorwaarts met maximale knieheffing: elke knie komt tot heuphogte bij elke stap. " +
+      "Houd contact met de grond kort en veerkrachtig. Armen bewegen krachtig in tegengestelde richting.",
+    safety_cue:
+      "Niet op de hielen landen — land op de middenvoet. Begin op halve snelheid.",
+    korfbal_context:
+      "Hoge stapfrequentie zorgt voor een snellere eerste stap in verdedigingssituaties.",
+    difficulty: "beginner" as const,
+    is_bilateral: 1 as const,
+    phv_safety: "allowed" as const,
+    sets: 3,
+    reps: "20m",
+    rest_seconds: 60,
+  },
+  {
+    name: "Hielbijtloop",
+    category: "snelheid" as const,
+    description:
+      "Loop voorwaarts terwijl je bij elke stap je hiel richting je bilspieren brengt. " +
+      "Houd een hoge kniepositie. Voeten landen snel onder je lichaam. " +
+      "Dit traint hamstring-activatie voor explosieve sprongen en sprints.",
+    safety_cue:
+      "Wees voorzichtig bij hamstring-klachten. Stop bij steken achter in het bovenbeen.",
+    korfbal_context:
+      "Actieve hamstring-betrokkenheid vermindert blessurerisico bij snelle afzetstappen in korfbal.",
+    difficulty: "beginner" as const,
+    is_bilateral: 1 as const,
+    phv_safety: "allowed" as const,
+    sets: 3,
+    reps: "20m",
+    rest_seconds: 60,
+  },
+  {
+    name: "Acceleratiesprint 10m",
+    category: "snelheid" as const,
+    description:
+      "Start vanuit een split-start. Explodeer maximaal voorwaarts over 10 meter. " +
+      "De eerste 3 stappen zijn klein en krachtig. Herstel volledig tussen pogingen.",
+    safety_cue:
+      "Alleen uitvoeren na volledige warming-up (10+ min). Maximale inspanning zonder warming-up veroorzaakt hamstring-scheuren.",
+    korfbal_context:
+      "De 0-10m acceleratie is de meest gebruikte sprint in korfbal — voor vrijlopen en verdedigen.",
+    difficulty: "intermediate" as const,
+    is_bilateral: 1 as const,
+    phv_safety: "caution" as const,
+    sets: 5,
+    reps: "10m max",
+    rest_seconds: 120,
+  },
+
+  // EXTRA PLYOMETRIE (3)
+  {
+    name: "Lateral Box Jump",
+    category: "plyometrie" as const,
+    description:
+      "Sta naast een lage box (20-30cm). Spring zijwaarts op de box, land met beide voeten tegelijk en gedempt. " +
+      "Stap af aan de andere kant en herhaal. Focus op stille, gecontroleerde landing.",
+    safety_cue:
+      "Stap altijd af — spring nooit van de box af. Begin met een lage box.",
+    korfbal_context:
+      "Laterale explosiviteit is nodig voor het zijwaarts uitsteken naar de bal bij verdedigingsacties.",
+    difficulty: "intermediate" as const,
+    is_bilateral: 1 as const,
+    phv_safety: "caution" as const,
+    sets: 3,
+    reps: "6",
+    rest_seconds: 90,
+  },
+  {
+    name: "Tuck Jump",
+    category: "plyometrie" as const,
+    description:
+      "Spring verticaal omhoog en trek je knieën maximaal op naar je borst. Land zacht op de middenvoet. " +
+      "Focus op maximale hoogte én maximale knieheffing.",
+    safety_cue:
+      "Alleen bij goede basistechniek. Land altijd gedempt — nooit op gestrekte knieën.",
+    korfbal_context:
+      "Knieheffing in de lucht vergroot de maximale spronghoogte bij kopballen en verlengen in korfbal.",
+    difficulty: "advanced" as const,
+    is_bilateral: 1 as const,
+    phv_safety: "caution" as const,
+    sets: 3,
+    reps: "5",
+    rest_seconds: 120,
+  },
+  {
+    name: "Bounding",
+    category: "plyometrie" as const,
+    description:
+      "Ren voorwaarts met overdreven grote stappen: duw krachtig af en zweef zo lang mogelijk. " +
+      "Hoog knieheffing, lange zweeffase, actieve armbeweging.",
+    safety_cue:
+      "Alleen met goede hamstring-kracht. Stop bij pijn in enkel of knie. Begin op gras.",
+    korfbal_context:
+      "Bounding bouwt de explosieve kracht voor de lange eerste stap bij aanvalsacties in korfbal.",
+    difficulty: "advanced" as const,
+    is_bilateral: 0 as const,
+    phv_safety: "caution" as const,
+    sets: 3,
+    reps: "20m",
+    rest_seconds: 120,
+  },
+
+  // EXTRA BEENSTERKTE (2)
+  {
+    name: "Single Leg Squat progressie",
+    category: "beensterkte" as const,
+    description:
+      "Sta op één been. Zak langzaam neer op het steunbeen tot de dij parallel aan de grond is. " +
+      "Gebruik een stoel voor ondersteuning als je er nog niet bent. Duw jezelf terug omhoog.",
+    safety_cue:
+      "Begin met ondersteuning. Laat je knie nooit naar binnen zakken.",
+    korfbal_context:
+      "Maximale eenbeens kracht is de basis voor afzettechnieken bij doelpogingen in korfbal.",
+    difficulty: "advanced" as const,
+    is_bilateral: 0 as const,
+    phv_safety: "caution" as const,
+    sets: 3,
+    reps: "5 per been",
+    rest_seconds: 120,
+  },
+  {
+    name: "Glute Bridge",
+    category: "beensterkte" as const,
+    description:
+      "Lig op je rug met gebogen knieën. Duw je heupen omhoog tot je lichaam een rechte lijn vormt. " +
+      "Knijp je bilspieren samen bovenin en houd 2 seconden vast. Laat langzaam zakken.",
+    safety_cue:
+      "Duw niet zo hoog dat je onderrug overstrekt. Houd je kern gespannen.",
+    korfbal_context:
+      "Sterke bilspieren zijn de motor achter elke versnelling en sprong in korfbal.",
+    difficulty: "beginner" as const,
+    is_bilateral: 1 as const,
+    phv_safety: "allowed" as const,
+    sets: 3,
+    reps: "15",
+    rest_seconds: 60,
   },
 ];
 

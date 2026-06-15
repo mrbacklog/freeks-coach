@@ -406,6 +406,8 @@ function capitalizeCategory(cat: string): string {
     kern: "Kernkracht",
     plyometrie: "Explosiviteit",
     herstel: "Herstel",
+    coordinatie: "Coördinatie",
+    snelheid: "Snelheid",
   };
   return names[cat] || cat;
 }
