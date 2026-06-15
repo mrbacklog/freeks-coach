@@ -187,13 +187,18 @@ export function generatePlan(db: Database, weekStart: string): PlanResult {
     }
   }
 
-  // F7: asserteer PHV-cap (werpt Error als constraint geschonden)
-  assertPhvCap(phvVensterActief, plyoVolumeModifier);
-
   // Trend-gebaseerde aanpassingen
   if (trendAnalyse.overreaching) {
     plyoVolumeModifier *= 0.8;
   }
+
+  // PHV-cap heeft de hoogste prioriteit: clip naar 0.6 als venster actief
+  if (phvVensterActief) {
+    plyoVolumeModifier = Math.min(plyoVolumeModifier, 0.6);
+  }
+
+  // F7: asserteer PHV-cap NADAT alle modifier-aanpassingen zijn gedaan
+  assertPhvCap(phvVensterActief, plyoVolumeModifier);
 
   // Laad activiteiten voor huidige week
   const huidigWeekCheckin = db

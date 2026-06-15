@@ -30,7 +30,7 @@ export function isInPhvVenster(offset: number): boolean {
 
 export function formatPhvDisplay(offset: number): string {
   if (offset < -1.0) {
-    const maanden = Math.round(Math.abs(offset + 1.0) * 12);
+    const maanden = Math.round(Math.abs(offset) * 12);
     return `Geschatte afstand tot PHV: over ~${maanden} maanden`;
   }
   if (offset <= 1.0) {
