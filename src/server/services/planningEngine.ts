@@ -1,4 +1,5 @@
 import type { Database } from "bun:sqlite";
+import { analyseerTrend } from "./trend-detection";
 
 export interface PlanResult {
   blocked: boolean;
@@ -112,6 +113,28 @@ export function generatePlan(db: Database, weekStart: string): PlanResult {
     volumeModifier -= 0.2;
   }
 
+  // Bereken weekelijkse adherentie (voltooide sessies / geplande sessies)
+  const weeklyAdherentie: number[] = weeks.map((_, weekIdx) => {
+    const weekOffset = (2 - weekIdx) * 7;
+    const ws = new Date(weekStart);
+    ws.setDate(ws.getDate() - weekOffset);
+    const wsStr = ws.toISOString().split("T")[0];
+    const row = db
+      .query(`
+        SELECT
+          COUNT(CASE WHEN s.completed_at IS NOT NULL THEN 1 END) as completed,
+          COUNT(s.id) as total
+        FROM training_plan tp
+        LEFT JOIN session s ON s.plan_id = tp.id
+        WHERE tp.week_start = ?
+      `)
+      .get(wsStr) as { completed: number; total: number } | null;
+    if (!row || row.total === 0) return 0;
+    return row.completed / row.total;
+  });
+
+  const trendAnalyse = analyseerTrend(weeklyAvgFatigue, weeklyAdherentie);
+
   // Step 3: PHV adjustment
   let plyoVolumeModifier = 1.0;
   let plyoIntensity = "high";
@@ -130,6 +153,11 @@ export function generatePlan(db: Database, weekStart: string): PlanResult {
   if (growthVelocity > 1.0) {
     plyoVolumeModifier -= 0.3;
     plyoIntensity = "moderate";
+  }
+
+  // Trend-gebaseerde aanpassingen
+  if (trendAnalyse.overreaching) {
+    plyoVolumeModifier *= 0.8;
   }
 
   // Step 4: Day structure
@@ -171,6 +199,7 @@ export function generatePlan(db: Database, weekStart: string): PlanResult {
     plyoVolumeModifier,
     growthVelocity,
     highFatigueWeeks,
+    trendAnalyse.boodschap,
   );
 
   const coachExplanation = buildCoachExplanation(
@@ -330,6 +359,7 @@ function buildPersonalizationMessages(
   plyoVolumeModifier: number,
   growthVelocity: number,
   highFatigueWeeks: number,
+  trendBoodschap: string | null,
 ): string[] {
   const messages: string[] = [];
 
@@ -370,6 +400,10 @@ function buildPersonalizationMessages(
 
   if (goals.length > 0) {
     messages.push(`Doel in zicht: "${goals[0].title}". Deze week direct op gericht.`);
+  }
+
+  if (trendBoodschap) {
+    messages.push(trendBoodschap);
   }
 
   return messages;
