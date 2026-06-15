@@ -4,7 +4,8 @@ WORKDIR /app
 
 # Install dependencies (bun:sqlite is built into Bun — no native modules needed for prod)
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
+# --no-save: lockfile differences between Windows (dev) and Linux (build) are expected
+RUN bun install --no-save
 
 # Build React frontend
 COPY . .
