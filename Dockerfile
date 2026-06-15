@@ -2,25 +2,26 @@ FROM oven/bun:1 AS builder
 
 WORKDIR /app
 
-# Install dependencies (bun:sqlite is built into Bun — no native modules needed for prod)
 COPY package.json bun.lock ./
-# --no-save: lockfile differences between Windows (dev) and Linux (build) are expected
-RUN bun install --no-save
+# --ignore-scripts: skip better-sqlite3 native compilation (only needed for vitest shim, not production)
+RUN bun install --ignore-scripts
 
-# Build React frontend
 COPY . .
-RUN bun run build
+# Build React frontend with Vite
+RUN bun x vite build
 
 # Production image
 FROM oven/bun:1-slim
 
 WORKDIR /app
 
-# Copy built assets and server source
+# Only production dependencies (hono + runtime deps); skip devDeps + native compilation
+COPY package.json bun.lock ./
+RUN bun install --production --ignore-scripts
+
+# Built React app and server source
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/src ./src
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+COPY src ./src
 
 # Data dir for SQLite volume mount
 RUN mkdir -p /data
