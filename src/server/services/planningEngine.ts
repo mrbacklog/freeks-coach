@@ -160,6 +160,42 @@ export function generatePlan(db: Database, weekStart: string): PlanResult {
     plyoVolumeModifier *= 0.8;
   }
 
+  // Laad activiteiten voor huidige week
+  const huidigWeekCheckin = db
+    .query(`SELECT id FROM weekly_check_in WHERE week_start = ? LIMIT 1`)
+    .get(weekStart) as { id: number } | null;
+
+  const activiteitenDezeWeek: { day_of_week: number; type: string }[] = huidigWeekCheckin
+    ? (db
+        .query(`SELECT day_of_week, type FROM activity_log WHERE weekly_check_in_id = ?`)
+        .all(huidigWeekCheckin.id) as { day_of_week: number; type: string }[])
+    : [];
+
+  const earlyMessages: string[] = [];
+
+  // Toetsweek: 20% volume-reductie
+  const toetsDagen = activiteitenDezeWeek.filter((a) => a.type === "toetsweek").length;
+  if (toetsDagen >= 3) {
+    volumeModifier = Math.min(volumeModifier, 0.8);
+    earlyMessages.push("Toetsweek — kort en fris, geen pieken.");
+  }
+
+  // Toernooi: dag-voor en dag-na = sprongvrij (herstellDagen bevat 0-indexed dag_of_week waarden)
+  const toernooidagen = activiteitenDezeWeek
+    .filter((a) => a.type === "toernooi")
+    .map((a) => a.day_of_week);
+  const herstellDagen = new Set<number>();
+  for (const dag of toernooidagen) {
+    if (dag > 0) herstellDagen.add(dag - 1);
+    herstellDagen.add(dag);
+    if (dag < 6) herstellDagen.add(dag + 1);
+  }
+
+  // schoolsport / andere_sport: beschouw als extra bezette dagen
+  const extraBezetteDagen = activiteitenDezeWeek
+    .filter((a) => a.type === "schoolsport" || a.type === "andere_sport")
+    .map((a) => a.day_of_week + 1); // activity_log gebruikt 0-6, planningEngine gebruikt 1-7
+
   // Step 4: Day structure
   const user = db.query("SELECT korfball_days FROM user LIMIT 1").get() as User | null;
   const korfballDays: string[] = user?.korfball_days ? JSON.parse(user.korfball_days) : [];
@@ -188,6 +224,8 @@ export function generatePlan(db: Database, weekStart: string): PlanResult {
     volumeModifier,
     plyoVolumeModifier,
     plyoIntensity,
+    herstellDagen,
+    extraBezetteDagen,
   );
 
   // Step 6: Personalization messages
@@ -200,6 +238,7 @@ export function generatePlan(db: Database, weekStart: string): PlanResult {
     growthVelocity,
     highFatigueWeeks,
     trendAnalyse.boodschap,
+    earlyMessages,
   );
 
   const coachExplanation = buildCoachExplanation(
@@ -257,12 +296,15 @@ function buildSessions(
   volumeModifier: number,
   plyoVolumeModifier: number,
   plyoIntensity: string,
+  herstellDagen: Set<number>,
+  extraBezetteDagen: number[],
 ): PlannedSession[] {
   const sessions: PlannedSession[] = [];
   const categories = ["beensterkte", "bovenlichaam", "kern", "plyometrie"] as const;
 
   // Plan 3 training sessions on non-korfball days
-  const trainingDays = [1, 2, 3, 4, 5, 6, 7].filter((d) => !korfballDays.includes(d));
+  const bezetteDagen = new Set([...korfballDays, ...extraBezetteDagen]);
+  const trainingDays = [1, 2, 3, 4, 5, 6, 7].filter((d) => !bezetteDagen.has(d));
   const selectedDays = trainingDays.slice(0, 3);
 
   const weekStartDate = new Date(weekStart);
@@ -273,11 +315,14 @@ function buildSessions(
     sessionDate.setDate(weekStartDate.getDate() + dayOfWeek - 1);
 
     const category = categories[i % categories.length];
-    const isPlyo = category === "plyometrie";
+    // activity_log day_of_week is 0-6; sessie dayOfWeek is 1-7
+    const isDagInHerstelveld = herstellDagen.has(dayOfWeek - 1);
+    const effectieveCategorie = isDagInHerstelveld && category === "plyometrie" ? "herstel" : category;
+    const isPlyo = effectieveCategorie === "plyometrie";
     const modifier = isPlyo ? plyoVolumeModifier : volumeModifier;
 
     const categoryExercises = exercises
-      .filter((e) => e.category === category)
+      .filter((e) => e.category === effectieveCategorie)
       .slice(0, Math.max(2, Math.floor(4 * modifier)));
 
     const sessionExercises: PlannedExercise[] = categoryExercises.map((e) => ({
@@ -292,7 +337,7 @@ function buildSessions(
     sessions.push({
       dayOfWeek,
       scheduledDate: sessionDate.toISOString().split("T")[0],
-      name: capitalizeCategory(category),
+      name: capitalizeCategory(effectieveCategorie),
       durationMinutes: isPlyo ? Math.floor(30 * modifier) : Math.floor(45 * modifier),
       intensityLabel: isPlyo ? plyoIntensity : "moderate",
       exercises: sessionExercises,
@@ -360,8 +405,9 @@ function buildPersonalizationMessages(
   growthVelocity: number,
   highFatigueWeeks: number,
   trendBoodschap: string | null,
+  earlyMessages: string[],
 ): string[] {
-  const messages: string[] = [];
+  const messages = [...earlyMessages];
 
   // Get week number (approximate)
   const firstPlan = db

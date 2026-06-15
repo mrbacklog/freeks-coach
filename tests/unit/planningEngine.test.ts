@@ -24,6 +24,8 @@ describe("Planning Engine", () => {
     db.exec("DELETE FROM training_plan");
     db.exec("DELETE FROM user");
     db.exec("DELETE FROM exercise");
+    db.exec("DELETE FROM activity_log");
+    db.exec("DELETE FROM weekly_check_in");
     // Insert default user
     db.exec(
       `INSERT INTO user (id, name, birth_date, korfball_days) VALUES (1, 'Freek', '2012-05-15', '["di","do","za"]')`,
@@ -138,5 +140,49 @@ describe("Planning Engine", () => {
     const result = generatePlan(db, "2026-06-15");
     expect(result.blocked).toBe(false);
     expect(result.sessions.length).toBeGreaterThan(0);
+  });
+
+  it("S7: toetsweek — volumeModifier maximaal 0.80", () => {
+    // Voeg een weekly_check_in toe voor de testweek
+    db.exec(`
+      INSERT OR IGNORE INTO weekly_check_in (week_start, body_energy, muscle_soreness, sleep_quality)
+      VALUES ('2025-01-13', 3, 2, 3)
+    `);
+    const wci = db
+      .query("SELECT id FROM weekly_check_in WHERE week_start = '2025-01-13'")
+      .get() as { id: number };
+    // Voeg 3 toetsweek-activiteiten toe
+    for (let dag = 0; dag < 3; dag++) {
+      db.exec(`
+        INSERT INTO activity_log (weekly_check_in_id, day_of_week, type)
+        VALUES (${wci.id}, ${dag}, 'toetsweek')
+      `);
+    }
+
+    const result = generatePlan(db, "2025-01-13");
+    expect(result.blocked).toBe(false);
+    expect(result.volumeModifier).toBeLessThanOrEqual(0.80);
+  });
+
+  it("S8: toetsweek-boodschap verschijnt in personalizationMessages", () => {
+    db.exec(`
+      INSERT OR IGNORE INTO weekly_check_in (week_start, body_energy, muscle_soreness, sleep_quality)
+      VALUES ('2025-01-20', 3, 2, 3)
+    `);
+    const wci = db
+      .query("SELECT id FROM weekly_check_in WHERE week_start = '2025-01-20'")
+      .get() as { id: number };
+    for (let dag = 0; dag < 3; dag++) {
+      db.exec(`
+        INSERT INTO activity_log (weekly_check_in_id, day_of_week, type)
+        VALUES (${wci.id}, ${dag}, 'toetsweek')
+      `);
+    }
+
+    const result = generatePlan(db, "2025-01-20");
+    const heeftToetsweekBericht = result.personalizationMessages.some((m) =>
+      m.toLowerCase().includes("toetsweek"),
+    );
+    expect(heeftToetsweekBericht).toBe(true);
   });
 });
