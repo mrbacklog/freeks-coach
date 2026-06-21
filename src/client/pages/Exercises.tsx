@@ -8,6 +8,8 @@ const CATEGORIES = [
   "kern",
   "plyometrie",
   "herstel",
+  "coordinatie",
+  "snelheid",
 ] as const;
 type Category = (typeof CATEGORIES)[number];
 
@@ -102,7 +104,7 @@ export function Exercises() {
               whiteSpace: "nowrap",
             }}
           >
-            {cat === "alle" ? "Alle" : cat}
+            {cat === "alle" ? "Alle" : cat === "coordinatie" ? "Coördinatie" : cat.charAt(0).toUpperCase() + cat.slice(1)}
           </button>
         ))}
       </div>
