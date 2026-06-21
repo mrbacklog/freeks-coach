@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Bar,
   BarChart,
@@ -140,7 +141,17 @@ export function Progress() {
           </ResponsiveContainer>
         </div>
       ) : (
-        <div style={leegStyle}>Voeg minimaal 2 metingen toe om lengtegroei te zien.</div>
+        <div style={leegStyle}>
+          Voeg minimaal 2 metingen toe om lengtegroei te zien.
+          <div style={{ marginTop: "8px" }}>
+            <Link
+              to="/measurements"
+              style={{ color: "var(--accent)", textDecoration: "none", fontSize: "var(--text-sm)" }}
+            >
+              + Meting toevoegen
+            </Link>
+          </div>
+        </div>
       )}
 
       {sprongData.length >= 2 ? (
@@ -176,7 +187,17 @@ export function Progress() {
           </ResponsiveContainer>
         </div>
       ) : (
-        <div style={leegStyle}>Voeg minimaal 2 metingen toe om sprongontwikkeling te zien.</div>
+        <div style={leegStyle}>
+          Voeg minimaal 2 metingen toe om sprongontwikkeling te zien.
+          <div style={{ marginTop: "8px" }}>
+            <Link
+              to="/measurements"
+              style={{ color: "var(--accent)", textDecoration: "none", fontSize: "var(--text-sm)" }}
+            >
+              + Meting toevoegen
+            </Link>
+          </div>
+        </div>
       )}
 
       {volumeData.length > 0 ? (

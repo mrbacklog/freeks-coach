@@ -372,8 +372,8 @@ function buildSessions(
     sessionDate.setDate(weekStartDate.getDate() + dayOfWeek - 1);
 
     const category = baseCategories[i % baseCategories.length];
-    // activity_log day_of_week is 0-6; sessie dayOfWeek is 1-7
-    const isDagInHerstelveld = herstellDagen.has(dayOfWeek - 1);
+    // activity_log day_of_week is 0-6 (0=Zon); buildSessions dayOfWeek is 1-7 (7=Zon)
+    const isDagInHerstelveld = herstellDagen.has(dayOfWeek === 7 ? 0 : dayOfWeek);
     const effectieveCategorie = isDagInHerstelveld && category === "plyometrie" ? "herstel" : category;
     const isPlyo = effectieveCategorie === "plyometrie";
     const modifier = isPlyo ? plyoVolumeModifier : volumeModifier;
