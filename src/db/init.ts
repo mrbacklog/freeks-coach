@@ -20,6 +20,14 @@ export function getDb(): Database {
     if (!goalCols.some((c) => c.name === "metric")) {
       db.exec("ALTER TABLE goal ADD COLUMN metric TEXT;");
     }
+    // Seed Freek Laban als er nog geen gebruiker is
+    const existingUser = db.query("SELECT id FROM user LIMIT 1").get();
+    if (!existingUser) {
+      db.exec(`
+        INSERT INTO user (id, name, birth_date, korfball_days, korfball_time, updated_at)
+        VALUES (1, 'Freek Laban', '2012-05-15', '[]', '', datetime('now'))
+      `);
+    }
     // Migratie: vergroot exercise.category CHECK-constraint voor coordinatie en snelheid
     const exerciseSql = db
       .query("SELECT sql FROM sqlite_master WHERE type='table' AND name='exercise'")
